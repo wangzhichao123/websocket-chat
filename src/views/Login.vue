@@ -90,7 +90,7 @@ const handleEnterBtnClick = () => {
     if (data.type === 3) {
       // 打印当前路由位置
       console.log('Current route:', router.currentRoute.value.path);
-      // localStorage.setItem('username', data.username);
+      localStorage.setItem('username', data.username);
       // localStorage.setItem('uid', data.uid);
       // localStorage.setItem('sessionID', data.sessionID);
       console.log("kkk")
