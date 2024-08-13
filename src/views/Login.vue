@@ -1,129 +1,110 @@
 /* eslint-disable */
 <template>
-  <div class="about">
-    <h3 style="color: #576c99">
-      欢迎来到在线聊天系统!请输入用户名
-    </h3>
-    <van-row type="flex" justify="center">
-      <van-col span="6"></van-col>
-      <van-col span="6">
-        <input type="text" placeholder="请输入用户ID" autofocus v-model="userId" />
-        <input type="text" placeholder="请输入用户名" autofocus v-model="username" />
-        <van-button @click="handleEnterBtnClick" color="#576c99" size="normal"
-          style="margin-top: 30px">进入聊天室</van-button></van-col>
-      <van-col span="6"></van-col>
-    </van-row>
-  </div>
-</template>
-
-<script setup>
-import { User, Message, MessageType } from "../assets/entity.js";
-import { ref, onMounted } from 'vue';
-import { socketManager } from '../assets/socket.js';
-import { useRouter } from 'vue-router';
-// import router from "@/router";
-const router = useRouter();
-const wsRef = ref(null);
-const message = ref('');
-const username = ref('');
-const userId = ref('');
-
-const check = () => {
-  const sessionID = localStorage.getItem("sessionID");
-  if (sessionID) {
-    console.log("1111");
-    wsRef.value.send(
-      JSON.stringify({
-        type: MessageType.MESSAGE_LOGIN,
-        data: {
-          sessionID: sessionID,
-        },
-      })
-    );
-    console.log("websocket message 前端发送", {
-      type: MessageType.MESSAGE_LOGIN,
-      data: {
-        sessionID: sessionID,
-      },
-    });
-  } else {
-    console.log("2222");
-  }
-};
-
-const handleEnterBtnClick = () => {
-  const usernameValue = username.value.trim();
-  const userIdValue = userId.value.trim();
-  if (usernameValue.length < 2) {
-    alert("用户名不小于2位");
-    return;
-  }
-
-  const connectWebSocket = () => {
-    const ws = new WebSocket(`ws://127.0.0.1:7979/websocket?userId=${userIdValue}`);
-    wsRef.value = ws;
-
-    ws.addEventListener('open', handleWsOpen);
-    ws.addEventListener('close', handleWsClose);
-    ws.addEventListener('error', handleWsError);
-    ws.addEventListener('message', handleWsMessage);
-  };
-
-  const handleWsOpen = () => {
-    console.log('WebSocket connection established');
-  };
-
-  const handleWsClose = () => {
-    console.log('WebSocket connection closed');
-    message.value = '连接关闭，请刷新重试！';
-  };
-
-  const handleWsError = (event) => {
-    console.error('WebSocket error:', event);
-    message.value = '连接错误，请刷新重试或检查网络！';
-  };
-
-  const handleWsMessage = (event) => {
-    const data = JSON.parse(event.data);
-    console.log('Received WebSocket message:', data);
-
-    if (data.type === 3) {
-      // 打印当前路由位置
-      console.log('Current route:', router.currentRoute.value.path);
-      localStorage.setItem('username', data.username);
-      // localStorage.setItem('uid', data.uid);
-      // localStorage.setItem('sessionID', data.sessionID);
-      console.log("kkk")
-      router.push({ path: '/' }).catch(err => {
-        console.error(err);
-      });
-    } else {
-      message.value = '用户名已存在，请重新输入！';
+    <div
+      :class="prefixCls"
+      class="relative h-[100%] lt-md:px-10px lt-sm:px-10px lt-xl:px-10px"
+    >
+      <div class="relative mx-auto h-full flex">
+        <div
+          :class="`${prefixCls}__left flex-1 bg-gray-500 bg-opacity-20 relative p-30px lt-xl:hidden`"
+        >
+          <!-- 左上角的 logo + 系统标题 -->
+          <div class="relative flex items-center text-white">
+            <img alt="" class="mr-10px h-48px w-48px" src="@/assets/logo.png" />
+            <span class="text-20px font-bold">{{ underlineToHump('websocket-chat') }}</span>
+          </div>
+          <!-- 左边的背景图 + 欢迎语 -->
+          <div class="h-[calc(100%-60px)] flex items-center justify-center">
+            <TransitionGroup
+              appear
+              enter-active-class="animate__animated animate__bounceInLeft"
+              tag="div"
+            >
+              <img key="1" alt="" class="w-350px" src="@/assets/bg-box.png" />
+              <div key="2" class="text-3xl text-white">{{ '欢迎登录' }}</div>
+              <div key="3" class="mt-5 text-14px font-normal text-white">
+                {{ '登录后可体验更多功能'  }}
+              </div>
+            </TransitionGroup>
+          </div>
+        </div>
+        <div class="relative flex-1 p-30px dark:bg-[var(--login-bg-color)] lt-sm:p-10px">
+          <!-- 右上角的主题、语言选择 -->
+          <div
+            class="flex items-center justify-between text-white at-2xl:justify-end at-xl:justify-end"
+          >
+            <div class="flex items-center at-2xl:hidden at-xl:hidden">
+              <img alt="" class="mr-10px h-48px w-48px" src="@/assets/logo.png" />
+              <span class="text-20px font-bold">{{ underlineToHump('xxxxx_yyyyy') }}</span>
+            </div>
+            <div class="flex items-center justify-end space-x-10px">
+              <span>ThemeSwitch</span>
+              <!-- <ThemeSwitch /> -->
+              <!-- <LocaleDropdown class="dark:text-white lt-xl:text-white" /> -->
+            </div>
+          </div>
+          <!-- 右边的登录界面 -->
+          <Transition appear enter-active-class="animate__animated animate__bounceInRight">
+            <div
+              class="m-auto h-full w-[100%] flex items-center at-2xl:max-w-500px at-lg:max-w-500px at-md:max-w-500px at-xl:max-w-500px"
+            >
+              <!-- 账号登录 -->
+              <LoginForm class="m-auto h-auto p-20px lt-xl:(rounded-3xl light:bg-white)" />
+              <!-- 手机登录 -->
+              <!-- <MobileForm class="m-auto h-auto p-20px lt-xl:(rounded-3xl light:bg-white)" /> -->
+              <!-- 二维码登录 -->
+              <!-- <QrCodeForm class="m-auto h-auto p-20px lt-xl:(rounded-3xl light:bg-white)" /> -->
+              <!-- 注册 -->
+              <RegisterForm class="m-auto h-auto p-20px lt-xl:(rounded-3xl light:bg-white)" />
+              <!-- 三方登录 -->
+              <!-- <SSOLoginVue class="m-auto h-auto p-20px lt-xl:(rounded-3xl light:bg-white)" /> -->
+            </div>
+          </Transition>
+        </div>
+      </div>
+    </div>
+  </template>
+  <script lang="ts" setup>
+  import { underlineToHump } from '@/utils'
+  import { RegisterForm } from '@/views/Login/components'
+  
+  import { useDesign } from '@/hooks/web/useDesign'
+  // import { useAppStore } from '@/stores/modules/app'
+  // import { ThemeSwitch } from '@/layout/components/ThemeSwitch'
+  // import { LocaleDropdown } from '@/layout/components/LocaleDropdown'
+  
+//   import { LoginForm, MobileForm, QrCodeForm, RegisterForm, SSOLoginVue } from './Login/components'
+  import { LoginForm } from './Login/components'
+  
+//   defineOptions({ name: 'Login' })
+  
+  // const appStore = useAppStore()
+  const { getPrefixCls } = useDesign()
+  const prefixCls = getPrefixCls('login')
+  </script>
+  
+  <style lang="scss" scoped>
+  $namespace: v;
+  $prefix-cls: #{$namespace}-login;
+  
+  .#{$prefix-cls} {
+    overflow: auto;
+    height: 100vh;
+  
+    &__left {
+      &::before {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        width: 100%;
+        height: 100%;
+        background-image: url('@/assets/svgs/login-bg.svg');
+        background-position: center;
+        background-repeat: no-repeat;
+        content: '';
+      }
     }
-  };
-
-  connectWebSocket();
-};
-
-onMounted(() => {
-  check();
-});
-</script>
-
-<style scoped lang="css">
-.about {
-  align-items: center;
-  text-align: center;
-  margin: 100px 30px;
-}
-
-.about input {
-  width: 300px;
-  height: 45px;
-  padding: 6px 8px;
-  border: 2px solid;
-  border-color: #576c99;
-  caret-color: #576c99;
-  caret-shape: underscore;
-}
-</style>
+  }
+  </style>
+  

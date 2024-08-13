@@ -4,22 +4,47 @@ import { createRouter as _createRouter, createWebHistory } from "vue-router";
 const routes = [
   {
     path: "/",
-    name: "Home",
+    name: "chatXXX",     // name 不能重复
+    redirect: "/login",
     // component: Home,
     meta: {
       keepAlive: true,
     },
-    component: () =>
-      import( "../views/Home.vue"),
   },
   {
     path: "/login",
     name: "Login",
     meta: {
-      keepAlive: false,
+      keepAlive: false, // 是否缓存页面
     },
     component: () =>
       import( "../views/Login.vue"),
+  },
+  {
+    path: "/login_form",
+    name: "LoginForm",
+    meta: {
+      keepAlive: false,
+    },
+    component: () =>
+      import( "../views/Login/components/LoginForm.vue"),
+  },
+  {
+    path: "/home",
+    name: "Home",
+    meta: {
+      keepAlive: false,
+    },
+    component: Home,
+  },
+  {
+    path: "/chat",
+    name: "Chat",
+    meta: {
+      keepAlive: false,
+    },
+    component:() =>
+      import( "../views/Chat.vue"),
   },
   // {
   //   path: "/chat",

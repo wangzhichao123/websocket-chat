@@ -3,31 +3,54 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "serve": "vue-cli-service serve --mode dev",
+    "build": "vue-cli-service build --mode dev",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "axios": "^1.7.2",
+    "babel-eslint": "^10.1.0",
     "core-js": "^3.8.3",
     "dayjs": "^1.11.8",
     "element-plus": "^2.4.2",
+    "jsencrypt": "^3.3.2",
+    "pinia": "^2.1.7",
+    "pinia-plugin-persistedstate": "^3.2.1",
     "vant": "latest",
     "vue": "^3.2.13",
-    "vue-router": "^4.0.3"
+    "vue-router": "^4.0.3",
+    "vue-types": "^5.1.1",
+    "vue3-emoji-picker": "^1.1.8",
+    "web-storage-cache": "^1.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
+    "@purge-icons/generated": "^0.9.0",
+    "@types/node": "^20.14.12",
+    "@typescript-eslint/eslint-plugin": "^5.9.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "@unocss/webpack": "^0.58.5",
+    "@vitejs/plugin-vue": "^5.0.5",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-plugin-router": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
+    "autoprefixer": "^10.4.19",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^8.0.3",
+    "postcss": "^8.4.39",
     "prettier": "^2.4.1",
+    "sass": "^1.77.8",
+    "sass-loader": "^10.1.0",
+    "tailwindcss": "^3.4.6",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.5.4",
+    "unocss": "^0.58.5",
     "unplugin-auto-import": "^0.16.7",
-    "unplugin-vue-components": "^0.25.2"
+    "unplugin-vue-components": "^0.25.2",
+    "vue-eslint-parser": "^9.4.3"
   }
 }

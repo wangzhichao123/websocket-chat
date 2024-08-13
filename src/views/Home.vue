@@ -10,7 +10,7 @@
                             </el-icon>联系人
                         </template>
                         <el-menu-item-group v-for="filteredItem in filteredUserList" :key="filteredItem.uid">
-                            <el-menu-item :index="String(filteredItem.uid)" @click="handleSelectUser" style="height: 40px;">
+                            <el-menu-item :index="String(filteredItem.uid)" @click="handleSelectUser(filteredItem)" style="height: 40px;">
                                 {{ filteredItem.name }}
                             </el-menu-item>
                         </el-menu-item-group>
@@ -32,6 +32,7 @@
 
         <el-container>
             <el-header style="text-align: right; font-size: 12px">
+                <div class="header-title">{{ headerTitle }}</div>
                 <div class="toolbar">
                     <el-text class="mx-1" type="primary" style="margin-right: 10px;">{{ message }}</el-text>
                     <!-- 重新连接websocket按钮 -->
@@ -76,7 +77,7 @@
                             </el-row>
 
                             <el-row>
-                                <el-col :span="1000" :offset="1" class="msg">
+                                <el-col :span="1000" :offset="1" class="msg" style="margin-top: 10px;margin-left: 40px;">
                                     {{ item.text }}
                                 </el-col>
                             </el-row>
@@ -116,22 +117,20 @@
     </el-container>
 </template>
   
-<script>
-import { User, MessageType } from "../assets/entity.js";
+<script lang="ts">
 import { ElAvatar, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElMenu, ElMenuItem, ElMenuItemGroup, ElScrollbar, ElRow, ElCol, ElButton } from 'element-plus'
 import { Menu as IconMenu, Message, Setting } from '@element-plus/icons-vue'
-import { socketManager } from '../assets/socket.js';
-import { onMounted, ref } from 'vue';
+import { socketManager } from '../assets/socket';
+import { ref } from 'vue';
+import { useCache } from '@/hooks/web/useCache'
+import { CommandTypeEnum } from "../enums/index";
 
-let ws = ref(socketManager.getSocket()).value;
-// const ws = new WebSocket("ws://159.75.18.63:9000");
-// const ws = new WebSocket("ws://127.0.0.1:9000/ws");
+const { wsCache } = useCache()
+
+let ws = socketManager.getSocket();
 export default {
     setup() {
         const innerRef = ref(null);
-        // const ws = ref(socketManager.getSocket()).value;
-
-
         return {
             innerRef,
         };
@@ -157,7 +156,7 @@ export default {
     data() {
         return {
             max: 0,
-            type: MessageType.MESSAGE_CHAT_GROUP,
+            type: "MESSAGE_CHAT_GROUP",
             userMsg:
             {
                 id: "",
@@ -180,69 +179,91 @@ export default {
             currentMsg: "",
             newUserName: "",
             isUpdate: false,
-            username: localStorage.getItem("username"),
+            username: wsCache.get("username"),
             contentHeight: 490,
             chatRoom: null,
-            userList: [],
+            userList: [
+                {
+                    uid: 1,
+                    name: "张三1"
+                },
+                {
+                    uid: 2,
+                    name: "张三2"
+                },
+                {
+                    uid: 3,
+                    name: "张三3"
+                },
+            ],
             groupList: [],
             // userMsgList: [],
             // groupMsgList: [],
             MsgList: [],
             conversitionList: [],
+            headerTitle: "",
         };
+    },
+    beforeUnmount() {
+        // 关闭 socket
+        socketManager.close();
     },
     //watch 中的函数, 给一个变量发送变化的回调函数, 如果变
     mounted() {
-        this.username = localStorage.getItem("username");
+        this.username = wsCache.get("username");
+        console.log("username", this.username);
 
         if (!this.username) {
             this.$router.push("/login");
             return;
         }
-        //transfer uid to numbera
-
-        this.uid = Number(localStorage.getItem("uid"));
-        console.log("this.uid", this.uid);
-        console.log("this.username", this.username);
+        socketManager.connect();
+        ws = socketManager.getSocket();
+        console.log("ws", ws);
         ws.addEventListener("open", this.handlewsOpen.bind(this), false);
         ws.addEventListener("close", this.handlewsClose.bind(this), false);
         ws.addEventListener("error", this.handlewsError.bind(this), false);
         ws.addEventListener("message", this.handlewsMessage.bind(this), false);
-
-        // 拉取本地聊天记录
-        // this.getRecord();
-        this.chatRoom = this.$refs.chatRoom;
-        console.log("this.chatRoom", this.chatRoom);
+        // 发送心跳包
+        this.startHeartbeat();
     },
     computed: {
         filteredUserList() {
             // 使用 computed 属性过滤数组
-            return this.userList.filter(item => item.uid !== this.uid);
+            return this.userList.filter((item) => {
+                return true;
+            }); 
         },
     },
     watch: {
-
         MsgList: {
             handler() {
                 this.$nextTick(() => {
                     this.updateMax();
-                    // console.log("this.innerRef", this.innerRef);
                     this.scrollToBottom();
-                    // console.log("this.chatRoom", this.chatRoom);
-
                 });
             },
             deep: true,
         },
     },
     methods: {
+        startHeartbeat() {
+            setInterval(() => { this.sendHeartbeat()}, 30000) // 每 30 秒发送一次心跳包
+        },
+        sendHeartbeat() {
+            if (socketManager.getSocket().readyState === WebSocket.OPEN) {
+                console.log('发送心跳包');
+                socketManager.getSocket().send(JSON.stringify({ cmd: String(CommandTypeEnum.HEARTBEAT), data: {} }))
+            }
+        },
 
         reconnect() {
             //先关闭之前的连接
             socketManager.close();
             console.log("socketManager.getSocket().readyState", socketManager.getSocket().readyState);
             if (socketManager.getSocket().readyState !== WebSocket.OPEN) {
-                socketManager.connect('ws://127.0.0.1:9000/ws');
+                // socketManager.connect('ws://127.0.0.1:9000/ws');
+                socketManager.connect();
             }
             else {
                 return;
@@ -254,165 +275,36 @@ export default {
                     //do something with the websocket
                 }
             }, 1000);
-            ws = ref(socketManager.getSocket()).value;
+            ws = socketManager.getSocket();
             ws.addEventListener("open", this.handlewsOpen.bind(this), false);
             ws.addEventListener("close", this.handlewsClose.bind(this), false);
             ws.addEventListener("error", this.handlewsError.bind(this), false);
             ws.addEventListener("message", this.handlewsMessage.bind(this), false);
-
-
         },
         updateMax() {
             if (this.innerRef) {
                 const arraySize = Object.keys(this.innerRef).length;
                 console.log("Array Size:", arraySize);
-
                 this.max = arraySize * 100 + 1000;
-                // console.log("this.max", this.max);
             }
         },
 
         scrollToBottom() {
             const scrollbar = this.$refs.chatRoom;
-            scrollbar.setScrollTop(this.max);
+            // scrollbar.setScrollTop(this.max);
 
         },
-        get_init_data() {
-            let obj = {
-                type: MessageType.MESSAGE_GET_INIT_DATA,
-                data: {
-                    uid: this.uid,
-                    username: this.username,
-                    dateTime: new Date().getTime(),
-                }
-            };
-            ws.send(JSON.stringify(obj));
-        },
-        handleSendBtnClick() {
-            const currentMsg = this.currentMsg;
-            if (!currentMsg.trim().length) {
-                return;
-            }
-
-            if (this.type == MessageType.MESSAGE_CHAT) {
-                let obj = {
-                    uid: this.uid,
-                    username: this.username,
-                    tid: this.tid,
-                    text: currentMsg,
-                };
-                ws.send(
-                    JSON.stringify({
-                        type: MessageType.MESSAGE_CHAT,
-                        data: obj,
-                    }
-                    )
-                );
-                console.log("this.MsgList", this.MsgList);
-                this.MsgList.push(obj);
-
-                this.userMsg = {
-                    id: "",
-                    uid: "",
-                    user: "",
-                    tid: "",
-                    dateTime: "",
-                    text: "",
-                };
-            }
-            else if (this.type == MessageType.MESSAGE_CHAT_GROUP) {
-                let obj = {
-                    uid: this.uid,
-                    gid: this.gid,
-                    gname: this.gname,
-                    username: this.username,
-                    dateTime: new Date().getTime(),
-                    text: currentMsg,
-                };
-                // 这里必须传递字符串aaaaaa
-                ws.send(
-                    JSON.stringify({
-                        type: MessageType.MESSAGE_CHAT_GROUP,
-                        data: obj,
-                    }
-                    )
-                );
-                this.MsgList.push(obj);
-
-                this.groupMsg = {
-                    id: "",
-                    uid: "",
-                    gid: "",
-                    gname: "",
-                    user: "",
-                    dateTime: "",
-                    text: "",
-                };
-            }
-
-            // ws.send({
-            //   id: new Date().getTime(),
-            //   user:this.username,
-            //   dateTime: new Date().getTime(),
-            //   msg:this.msgaaaa
-
-            // })a
-        },
-        handleSelectUser(item) {
-            this.type = MessageType.MESSAGE_CHAT;
-
-            this.tid = Number(item.index);
-            console.log(this.type, this.tid);
-            // this.id = Number(item.index);
-            let obj = {
-                type: MessageType.MESSAGE_GET_USER_MESSAGE_LIST,
-                data: {
-                    uid: this.uid,
-                    tid: this.tid,
-                },
-            };
-            ws.send(JSON.stringify(obj));
-        },
-        handleSelectGroup(item) {
-            this.type = MessageType.MESSAGE_CHAT_GROUP;
-            console.log(item);
-            this.gid = Number(item.index);
-            let obj = {
-                type: MessageType.MESSAGE_GET_GROUP_MESSAGE_LIST,
-                data: {
-                    uid: this.uid,
-                    gid: this.gid,
-                },
-            };
-            console.log(obj);
-            ws.send(JSON.stringify(obj));
-        },
-
 
         handlewsOpen(e) {
             this.message = "连接成功";
             console.log("websocket open 前端handlewsOpen连接成功");
-            console.log("ws.uid", ws.uid);
-            console.log("ws.username", ws.username);
-            this.get_init_data();
-            this.handleSelectUser({ index: this.uid })
-            this.handleSelectGroup({ index: this.gid })
+            // this.get_init_data();
+            // this.handleSelectUser({ index: this.uid })
+            // this.handleSelectGroup({ index: this.gid })
             this.message = "在线中";
-            // ws.send(
-            //     JSON.stringify({
-            //         type: MessageType.MESSAGE_GET_ONLINE_USERS,
-            //         data:
-            //         {
-            //             uid: this.uid,
-            //             username: this.username,
-            //             dateTime: new Date().getTime(),
-            //         }
-
-            //     })
-            // );
         },
         handlewsClose(e) {
-            console.log("websocket close 前端关闭连接");
+            console.log("websocket close 前端关闭连接", e);
             this.message = "连接关闭,请刷新重试!";
         },
         handlewsError(e) {
@@ -420,53 +312,10 @@ export default {
             this.message = "连接错误,请刷新重试或者检查网络!";
         },
         handlewsMessage(e) {
-            // var scrollBar = document.querySelector('#chat-room');
-
-            // // 获取元素的高度  
-            // var height = scrollBar.offsetHeight;
-            // console.log(height)
-            // this.chatRoom.setScrollTop(height + 500);
-
-
             let data = JSON.parse(e.data);
             console.log("websocket message 前端接收", data);
             //初始化用户列表和群组列表
-            if (data.type == MessageType.MESSAGE_GET_INIT_DATA) {
-                this.userList = data.data.userList;
-                this.groupList = data.data.groupList;
-            }
-            else if (data.type == MessageType.MESSAGE_LOGIN_FAILED) {
-                console.log(MessageType.MESSAGE_LOGIN_FAILED)
-                this.$router.push("/login");
-                return;
-            }
-            else if (data.type == MessageType.MESSAGE_CHAT) {
-                this.MsgList.push(data.data);
-
-            }
-            else if (data.type == MessageType.MESSAGE_CHAT_GROUP) {
-                this.MsgList.push(data.data);
-
-            }
-            else if (data.type == MessageType.MESSAGE_GET_USER_MESSAGE_LIST) {
-                this.MsgList = data.data;
-            }
-
-            else if (data.type == MessageType.MESSAGE_GET_GROUP_MESSAGE_LIST) {
-                this.MsgList = data.data;
-
-            }
-            this.$nextTick(() => {
-                var scrollBar = document.querySelector('#chat-room');
-
-                // 获取元素的高度  
-                var height = scrollBar.offsetHeight;
-                console.log(height)
-                // this.chatRoom.setScrollTop(height + 500);
-            });
             return;
-
-
         },
         updateUser() {
             this.isUpdate = true;
@@ -476,21 +325,6 @@ export default {
             this.username = this.newUserName;
             localStorage.setItem("username", this.username); //set username to local storage for reuse.  (username is the key)
         },
-        // getRecord() {
-        //     let data = JSON.parse(localStorage.getItem("record")) || {};
-        //     if (data) {
-        //         if (this.username == data.username) {
-        //             this.msgList = data.GroupMsgRecordList; //update the message list.  (the message list is the key)
-        //             this.$nextTick(() => {
-        //                 this.chatRoom.setScrollTop(this.chatRoom.height);
-        //             });
-        //         }
-        //     }
-        //     let userList = JSON.parse(localStorage.getItem("userList")) || [];
-        //     this.userList = userList;
-        //     let groupList = JSON.parse(localStorage.getItem("groupList")) || [];
-        //     this.groupList = groupList;
-        // },
     },
 };
 </script>
@@ -524,6 +358,10 @@ export default {
     right: 5px;
 }
 
+.chat-room {
+    background-color: antiquewhite;
+}
+
 .chat-room .msg {
     background-color: #12B7F5;
     /* box-shadow: rgba(18, 23, 45, 0.6) 0px 8px 24px; */
@@ -548,6 +386,16 @@ export default {
     /* max-width: 330px; */
     margin-top: 20px;
     color: white;
+}
+
+
+.header-title{
+    display: inline-block;
+    float: left;
+    margin-top: 16px;
+    margin-left: 10px;
+    font-size: 20px;
+    font-weight: bold;
 }
 </style>
   
