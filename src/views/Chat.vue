@@ -47,7 +47,7 @@
         <div v-if="selectContactId !== ''">
           <el-container class="content-area flex-1 mb-1">
             <el-header style="font-size: 18px; height: 36px; line-height: 36px; padding: 0; font-weight: bold;">
-              <div class="header-title">{{ headerTitle }}</div>
+              <el-avatar class="avatar" size="default" fit="fit" :src="headerAvatar"></el-avatar> <span class="header-title">{{ headerTitle }}</span>
             </el-header>
             <el-main style="margin-top: 1px; padding: 0;">
               <!-- el-scrollbar 要先设置 高度 -->
@@ -195,6 +195,7 @@ onBeforeUnmount(() => {
 
 const selectContactId = ref('');
 const headerTitle = ref('');
+const headerAvatar = ref('');
 const inputValue = ref('');
 const Msg = ref("不在线");
 
@@ -267,6 +268,7 @@ const showFileDialog = () => {
 const handleSelectUser = (item) => {
   selectContactId.value = item.userId;
   headerTitle.value = item.nickname;
+  headerAvatar.value = item.userAvatar;
   messageType.value = GroupTypeEnum.PRIVATE;
 }
 
