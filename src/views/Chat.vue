@@ -43,75 +43,83 @@
             </el-scrollbar>
           </el-container>
       </el-aside>
-      <el-container class="content flex flex-col bg-amber-200 p-1">
-        <el-container class="content-area flex-1 mb-1">
-          <el-header style="font-size: 18px; height: 36px; line-height: 36px; padding: 4px; font-weight: bold;">
-            <div class="header-title">{{ headerTitle }}</div>
-          </el-header>
-          <el-main style="margin-top: 1px; padding: 0;">
-            <!-- el-scrollbar 要先设置 高度 -->
-            <el-scrollbar class="chat-room" id="chat-room" ref="chatRoom" style="margin-top: 1px; height: 660px;" always
-            :native="false"
-            @scroll="handleScroll"   
-            >
-              <div v-for="item in MsgList" :key="item.messageId" ref="innerRef"
-                  style="margin-top: 10px;margin-bottom: 20px;">
-                  <!-- 左边 -->
-                  <div v-if="currUserUid !== item.userFromId" style="margin-left: 10px;margin-bottom: 8px;">
-                      <el-row class="row-bg" type="flex" align="middle">
-                          <el-avatar size="default" fit="fit">{{ item.userFromId }}</el-avatar>
-                          <span style="margin-left: 10px">{{ dayjs(item.sendTime).format("YYYY-MM-DD HH:mm") }}</span>
-                      </el-row>
+      <el-container class="content flex flex-col px-1">
+        <div v-if="selectContactId !== ''">
+          <el-container class="content-area flex-1 mb-1">
+            <el-header style="font-size: 18px; height: 36px; line-height: 36px; padding: 0; font-weight: bold;">
+              <div class="header-title">{{ headerTitle }}</div>
+            </el-header>
+            <el-main style="margin-top: 1px; padding: 0;">
+              <!-- el-scrollbar 要先设置 高度 -->
+              <el-scrollbar class="chat-room" id="chat-room" ref="chatRoom" style="margin-top: 1px; height: 670px;" always
+              :native="false"
+              @scroll="handleScroll"   
+              >
+                <div v-for="item in MsgList" :key="item.messageId" ref="innerRef"
+                    style="margin-top: 10px;margin-bottom: 20px;">
+                    <!-- 左边 -->
+                    <div v-if="currUserUid !== item.userFromId" style="margin-left: 10px;margin-bottom: 8px;">
+                        <el-row class="row-bg" type="flex" align="middle">
+                            <el-avatar size="default" fit="fit">{{ item.userFromId }}</el-avatar>
+                            <span style="margin-left: 10px">{{ dayjs(item.sendTime).format("YYYY-MM-DD HH:mm") }}</span>
+                        </el-row>
 
-                      <el-row>
-                          <el-col :span="1000" :offset="1" class="msg" style="margin-top: 10px;margin-left: 40px;">
-                              {{ item.messageContent }}
-                          </el-col>
-                      </el-row>
-                  </div>
-                  <!-- 右边 -->
-                  <div v-else style="margin-right: 10px;margin-bottom: 8px;">
-                      <el-row class="row-bg" type="flex" justify="end" align="middle">
-                          <span style="margin-right: 10px">{{ dayjs(item.sendTime).format("YYYY-MM-DD HH:mm")
-                          }}</span>
+                        <el-row>
+                            <el-col :span="1000" :offset="1" class="msg" style="margin-top: 10px;margin-left: 40px;">
+                                {{ item.messageContent }}
+                            </el-col>
+                        </el-row>
+                    </div>
+                    <!-- 右边 -->
+                    <div v-else style="margin-right: 10px;margin-bottom: 8px;">
+                        <el-row class="row-bg" type="flex" justify="end" align="middle">
+                            <span style="margin-right: 10px">{{ dayjs(item.sendTime).format("YYYY-MM-DD HH:mm")
+                            }}</span>
 
-                          <el-avatar size="default" fit="fit"> {{ item.userFromId }} </el-avatar>
-                      </el-row>
+                            <el-avatar size="default" fit="fit"> {{ item.userFromId }} </el-avatar>
+                        </el-row>
 
-                      <el-row justify="end">
-                          <!-- 加载动画 -->
-                          <el-col :span="1" style="margin-top: 20px;">
-                            <LoadingComponent :visible="item.status !== 'success'" :isLoading="item.status === 'loading'" :isError="item.status === 'error'" />
-                          </el-col>
-                          <el-col :span="1000" class="msg2" style="margin-right: 20px;">
-                              {{ item.messageContent }}
-                          </el-col>
-                      </el-row>
-                  </div>
-              </div>
-            </el-scrollbar>
-          </el-main>
-        </el-container>
-        <el-container class="footer-area h-10 flex-none">
-          <el-input class="h-10 relative" v-model="inputValue" placeholder="请输入消息按Enter发送" @keydown.enter="sendMessage" clearable>
-            <template #append>
-              <!-- 元素 上下居中 左右对齐 -->
-              <Icon class="cursor-pointer pr-[8px]" icon="fluent:emoji-32-regular" @click="showEmojiPicker = !showEmojiPicker" ref="emojiIconRef" />
-              <Icon class="cursor-pointer pl-[8px]" icon="material-symbols:upload" @click="showFileDialog" style="border-left: 1px solid #ccc ;"/>
-              <EmojiPicker 
-                v-show="showEmojiPicker"
-                :native="true"
-                @select="onSelectEmoji"
-                class="absolute translate-y-[-180px] translate-x-[-150px]" 
-                ref="emojiPickerRef"
-              />
+                        <el-row justify="end">
+                            <!-- 加载动画 -->
+                            <el-col :span="1" style="margin-top: 20px;">
+                              <LoadingComponent :visible="item.status !== 'success'" :isLoading="item.status === 'loading'" :isError="item.status === 'error'" />
+                            </el-col>
+                            <el-col :span="1000" class="msg2" style="margin-right: 20px;">
+                                {{ item.messageContent }}
+                            </el-col>
+                        </el-row>
+                    </div>
+                </div>
+              </el-scrollbar>
+            </el-main>
+          </el-container>
+          <el-container class="footer-area h-10 flex-none">
+            <el-input class="h-10 relative" v-model="inputValue" placeholder="请输入消息按Enter发送" @keydown.enter="sendMessage" clearable>
+              <template #append>
+                <!-- 元素 上下居中 左右对齐 -->
+                <Icon class="cursor-pointer pr-[8px]" icon="fluent:emoji-32-regular" @click="showEmojiPicker = !showEmojiPicker" ref="emojiIconRef" />
+                <Icon class="cursor-pointer pl-[8px]" icon="material-symbols:upload" @click="showFileDialog" style="border-left: 1px solid #ccc ;"/>
+                <EmojiPicker 
+                  v-show="showEmojiPicker"
+                  :native="true"
+                  @select="onSelectEmoji"
+                  class="absolute translate-y-[-180px] translate-x-[-150px]" 
+                  ref="emojiPickerRef"
+                />
 
-            </template>
-          </el-input>
-          <el-button class="h-10 " type="primary" size="default" @click="sendMessage">
-            发送
-          </el-button>
-        </el-container>
+              </template>
+            </el-input>
+            <el-button class="h-10 " type="primary" size="default" @click="sendMessage">
+              发送
+            </el-button>
+          </el-container>
+        </div>
+        <div v-else class="empty-background">
+          <div class="empty-message">
+            <img src="https://api.iconify.design/token:chat.svg" alt="Chat Icon" class="chat-icon" />
+            <!-- 可以根据需要添加更多内容，比如图片或图标 -->
+          </div>
+        </div>
       </el-container>
     </el-container>
   </el-container>
@@ -398,7 +406,7 @@ const handlewsConnectException = (message: string) => {
     ElNotification({
       message: message,
       type: 'error',
-      duration: 3000, // 控制显示时长，单位是毫秒，3000ms = 3秒
+      duration: 1000, // 控制显示时长，单位是毫秒，3000ms = 3秒
       position: 'top-right', // 控制通知显示的位置，可以是 'top-right', 'top-left', 'bottom-right', 'bottom-left'
       customClass: 'notification-on-top', // 添加自定义类以控制 z-index
       onClose: () => resolve() // 当通知关闭时，调用 resolve
@@ -463,7 +471,31 @@ html, body {
     .content {
         flex: 3;
         height: 100%;
+        .content-area{
+          .header-title{
+            background-color: rgb(231, 232, 235);
+          }
+        }
         // background-color: bisque;
+        .empty-background {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          background-color: #f5f5f5;
+
+          .empty-message {
+            text-align: center;
+            color: #999;
+            font-size: 1.2rem;
+            
+            .chat-icon {
+              width: 50px;
+              height: 50px;
+              margin-bottom: 1rem;
+            }
+          }
+        }
     }
 }
 
