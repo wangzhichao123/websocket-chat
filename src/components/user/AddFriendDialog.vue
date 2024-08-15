@@ -28,7 +28,7 @@
     </div>
   </template>
   
-  <script>
+  <script lang="ts">
   import request from '@/config/axios/index'
   
   export default {
@@ -57,7 +57,7 @@
   
       const searchFriend = () => {
         // 假设搜索好友的接口为 /user/searchFriend
-        request.get({url: '/user/searchFriend', params: {account: form.value.friendAccount}})
+        request.post({url: 'api/user/search/relationship', params: {account: form.value.friendAccount}})
           .then(res => {
             friendInfo.value = res.data;
           })
