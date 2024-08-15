@@ -57,8 +57,9 @@
         friendInfo.value = null;
       };
   
-      const searchFriend = () => {
+      const searchFriend = (event) => {
         // 假设搜索好友的接口为 /user/searchFriend
+        event.preventDefault(); // 防止默认行为，例如表单提交
         request.post({url: 'api/user/search/relationship', params: {userId: form.value.userToId}})
           .then(res => {
             friendInfo.value = res;
@@ -71,7 +72,7 @@
       const addFriend = () => {
         console.log('添加好友:', form.value);
         // 提交表单，进行添加好友
-        request.post({url: 'api/user/add', data: form.value}).then(res => {
+        request.post({url: 'api/user/add', params:{userToId: form.value.userToId, userFromId: form.value.userFromId}}).then(res => {
           console.log(res);
         })
         showDialog.value = false;
