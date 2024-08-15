@@ -11,13 +11,15 @@
         <el-form :model="form">
           <el-form-item label="好友账户" :label-width="formLabelWidth">
             <div class="search-container">
-              <el-input v-model="form.friendAccount" autocomplete="off"></el-input>
+              <el-input v-model="form.userToId" autocomplete="off" @keydown.enter="searchFriend"></el-input>
               <el-button @click="searchFriend">搜索</el-button>
             </div>
           </el-form-item>
           <el-form-item v-if="friendInfo" label="好友信息" :label-width="formLabelWidth">
-            <div>{{ friendInfo.name }}</div>
-            <div>{{ friendInfo.email }}</div>
+            <div class="friend-info">
+                <div class="friend-nickname">{{ friendInfo.nickname }}</div>
+                <div class="friend-id">{{ friendInfo.userId }}</div>
+            </div>
           </el-form-item>
         </el-form>
         <template #footer>
@@ -44,22 +46,22 @@
       const { userId } = toRefs(props);
       const showDialog = ref(false);
       const form = ref({
-        friendAccount: '',
-        userId: userId.value
+        userToId: '',
+        userFromId: userId.value
       });
       const friendInfo = ref(null);
       const formLabelWidth = '100px';
   
       const resetForm = () => {
-        form.value.friendAccount = '';
+        form.value.userToId = '';
         friendInfo.value = null;
       };
   
       const searchFriend = () => {
         // 假设搜索好友的接口为 /user/searchFriend
-        request.post({url: 'api/user/search/relationship', params: {account: form.value.friendAccount}})
+        request.post({url: 'api/user/search/relationship', params: {userId: form.value.userToId}})
           .then(res => {
-            friendInfo.value = res.data;
+            friendInfo.value = res;
           })
           .catch(err => {
             console.error('搜索失败', err);
@@ -69,7 +71,7 @@
       const addFriend = () => {
         console.log('添加好友:', form.value);
         // 提交表单，进行添加好友
-        request.post({url: '/user/addFriend', data: form.value}).then(res => {
+        request.post({url: 'api/user/add', data: form.value}).then(res => {
           console.log(res);
         })
         showDialog.value = false;
@@ -103,5 +105,27 @@
       margin-right: 10px;
     }
   }
+
+  .friend-info {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  .friend-nickname {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+    color: #333;
+   }
+
+   .friend-id {
+    font-size: 0.9em;
+    color: #777;
+  }
+}
+
+
   </style>
   

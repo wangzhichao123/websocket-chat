@@ -13,7 +13,7 @@
             </el-button>
           </el-container>
           <el-container>
-            <el-row class="w-8 p-2 bg-sky-400 content-start">
+            <el-row class="w-12 p-4 py-1 bg-sky-400 content-start">
               <el-col class="my-3">
                 <el-icon><Icon class="cursor-pointer" icon="websymbol:chat" /></el-icon>
               </el-col>
