@@ -6,7 +6,7 @@
       <el-aside class="left-list mr-1">
           <el-container class="list-header">
             <OnlineStatus :isOnline="Msg === '在线中'" :onlineStatus="Msg">
-              <el-avatar class="avatar" size="default" fit="fit"> {{username}} </el-avatar>
+              <el-avatar class="avatar" size="default" fit="cover" :src="userAvatar"> {{username}} </el-avatar>
             </OnlineStatus>
             <el-button class="circle-button" type="primary" circle>
               <AddFriendDialog :userId="currUserUid"/>
@@ -46,12 +46,13 @@
       <el-container class="content flex flex-col px-1">
         <div v-if="selectContactId !== ''">
           <el-container class="content-area flex-1 mb-1">
-            <el-header style="font-size: 18px; height: 36px; line-height: 36px; padding: 0; font-weight: bold;">
-              <el-avatar class="avatar" size="default" fit="fit" :src="headerAvatar"></el-avatar> <span class="header-title">{{ headerTitle }}</span>
+            <el-header class="header" style="font-size: 18px; height: 50px; line-height: 50px; padding: 0; font-weight: bold;">
+              <el-avatar class="avatar" size="default" fit="cover" :src="headerAvatar"></el-avatar>
+              <span class="header-title">{{ headerTitle }}</span>
             </el-header>
             <el-main style="margin-top: 1px; padding: 0;">
               <!-- el-scrollbar 要先设置 高度 -->
-              <el-scrollbar class="chat-room" id="chat-room" ref="chatRoom" style="margin-top: 1px; height: 670px;" always
+              <el-scrollbar class="chat-room" id="chat-room" ref="chatRoom" style="margin-top: 1px; height: 656px;" always
               :native="false"
               @scroll="handleScroll"   
               >
@@ -154,6 +155,7 @@ let ws = socketManager.getSocket();
 const messageType = ref(GroupTypeEnum.PRIVATE);
 const currUserUid = ref('')
 const username = ref(wsCache.get("username") || '');
+const userAvatar = ref(wsCache.get("userAvatar") || '');
 const userList = ref([
   // {userId: 1, nickname: '张三1'},
 ]);
@@ -474,8 +476,19 @@ html, body {
         flex: 3;
         height: 100%;
         .content-area{
-          .header-title{
+          .header{
+            font-size: 18px;
+            height: 50px;
+            line-height: 50px;
+            padding: 0;
+            font-weight: bold;
+            display: flex;           /* 使用 Flexbox 布局 */
+            align-items: center;     /* 垂直方向上居中对齐 */
+            justify-content: start;  /* 水平方向上左对齐 */
             background-color: rgb(231, 232, 235);
+            .avatar {
+              margin-right: 10px;      /* 给头像和标题之间增加间距 */
+            }
           }
         }
         // background-color: bisque;

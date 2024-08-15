@@ -237,6 +237,7 @@ const handleLogin = async () => {
         console.log('Current route:', router.currentRoute.value.path);
         wsCache.set('username', data.data.nickname, {exp: 7 * 24 * 60 * 60});
         wsCache.set('userId', data.data.userId, {exp: 7 * 24 * 60 * 60});
+        wsCache.set('userAvatar', data.data.userAvatar, {exp: 7 * 24 * 60 * 60});
         setAccessToken(data.data.token);    // 保存 token, 7 天
         ElMessage({
           message: "登录成功",
