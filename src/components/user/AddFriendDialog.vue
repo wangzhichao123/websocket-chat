@@ -1,6 +1,6 @@
 <template>
     <div>
-      <Icon icon="ph:plus-bold" @click="showDialog = true"></Icon>
+      <Icon icon="ph:plus-bold" @click="showDialogFun"></Icon>
   
       <el-dialog
         title="添加好友"
@@ -23,7 +23,7 @@
           </el-form-item>
         </el-form>
         <template #footer>
-          <el-button @click="showDialog = false">取消</el-button>
+          <el-button @click="noShowDialog">取消</el-button>
           <el-button type="primary" @click="addFriend" :disabled="!friendInfo">添加</el-button>
         </template>
       </el-dialog>
@@ -76,7 +76,19 @@
           console.log(res);
         })
         showDialog.value = false;
-        resetForm();
+        nextTick(() => {
+          // 重置表单
+          resetForm();
+        });
+      };
+
+      const showDialogFun = () => {
+        showDialog.value = true;
+      };
+
+      const noShowDialog = (event) => {
+        event.stopPropagation();
+        showDialog.value = false;
       };
   
       return {
@@ -86,7 +98,9 @@
         formLabelWidth,
         addFriend,
         resetForm,
-        searchFriend
+        searchFriend,
+        showDialogFun,
+        noShowDialog
       };
     }
   };

@@ -45,7 +45,7 @@ export enum StatusCodeEnum {
   /** 收到群列表 */
   RECEIVE_GROUP_LIST = 10006,
   /** 收到好友申请 */
-  RECEIVE_FRIEND_APPLY = 10007,
+  RECEIVE_FRIEND_APPLY = 10012,
   /** 收到群申请 */
   RECEIVE_GROUP_APPLY = 10008,
   /** 收到好友申请回复 */

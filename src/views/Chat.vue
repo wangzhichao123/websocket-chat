@@ -8,8 +8,8 @@
             <OnlineStatus :isOnline="Msg === '在线中'" :onlineStatus="Msg">
               <el-avatar class="avatar" size="default" fit="cover" :src="userAvatar"> {{username}} </el-avatar>
             </OnlineStatus>
-            <el-button class="circle-button" type="primary" circle>
-              <AddFriendDialog :userId="currUserUid"/>
+            <el-button class="circle-button" type="primary" circle @click="showAddFriendDialog">
+              <AddFriendDialog :userId="currUserUid" ref="addFriendDialog"/>
             </el-button>
           </el-container>
           <el-container>
@@ -22,6 +22,9 @@
               </el-col>
               <el-col class="my-3">
                 <el-icon><Icon class="cursor-pointer" icon="material-symbols:group-work" /></el-icon>
+              </el-col>
+              <el-col class="my-3">
+                <el-icon><Icon class="cursor-pointer" icon="whh:addfriend" /></el-icon>
               </el-col>
               <!-- 更多 el-col -->
             </el-row>
@@ -143,6 +146,7 @@ import dayjs from 'dayjs';
 import { ElScrollbar, ElNotification  } from 'element-plus';
 import { startHeartbeat } from '@/utils/index';
 import request from '@/config/axios/index'
+import AddFriendDialog from '@/components/user/AddFriendDialog.vue';
 const innerRef = ref(null);
 
 const userStore = useUserStore();
@@ -153,7 +157,7 @@ const { wsCache } = useCache()
 let ws = socketManager.getSocket();
 
 const messageType = ref(GroupTypeEnum.PRIVATE);
-const currUserUid = ref('')
+const currUserUid = ref(wsCache.get("userId") || '')
 const username = ref(wsCache.get("username") || '');
 const userAvatar = ref(wsCache.get("userAvatar") || '');
 const userList = ref([
@@ -171,6 +175,12 @@ const filteredUserList = computed({
   }
 });
 
+// 添加好友
+const addFriendDialog = ref<InstanceType<typeof AddFriendDialog> | null>(null);
+
+const showAddFriendDialog = () => {
+  addFriendDialog.value?.showDialogFun();
+};
 
 // ----------------- emoji picker 点击事件处理 -----------------
 const emojiIconRef = ref<InstanceType<typeof Icon> | null>(null); // 使用组件的类型
@@ -371,7 +381,10 @@ const handlewsMessage = (e) => {
         console.log("获取用户列表失败", err);
       });
     }
-    // if (data.code === StatusCodeEnum.RECEIVE_PRIVATE_MESSAGE)
+    else if (data.code === StatusCodeEnum.RECEIVE_FRIEND_APPLY) {
+      console.log("好友申请");
+      console.log(data);
+    }
     else  {
       console.log("接收到私聊消息");
       console.log(data);
