@@ -1,6 +1,6 @@
 <template>
     <div>
-      <Icon icon="ph:plus-bold" @click="showDialogFun"></Icon>
+      <Icon icon="ph:plus-bold" @click.prevent="showDialogFun"></Icon>
   
       <el-dialog
         title="添加好友"
@@ -12,19 +12,24 @@
           <el-form-item label="好友账户" :label-width="formLabelWidth">
             <div class="search-container">
               <el-input v-model="form.userToId" autocomplete="off" @keydown.enter="searchFriend"></el-input>
-              <el-button @click="searchFriend">搜索</el-button>
+              <el-button @click.prevent="searchFriend">搜索</el-button>
             </div>
           </el-form-item>
           <el-form-item v-if="friendInfo" label="好友信息" :label-width="formLabelWidth">
             <div class="friend-info">
-                <div class="friend-nickname">{{ friendInfo.nickname }}</div>
-                <div class="friend-id">{{ friendInfo.userId }}</div>
+                <el-avatar :src="friendInfo.userAvatar" fit="cover"></el-avatar>
+                <div class="friend-details">
+                    <div class="friend-nickname">用户昵称: {{ friendInfo.nickname }}</div>
+                    <div class="friend-id">用户ID: {{ friendInfo.userId }}</div>
+                </div>
             </div>
           </el-form-item>
         </el-form>
         <template #footer>
-          <el-button @click="noShowDialog">取消</el-button>
-          <el-button type="primary" @click="addFriend" :disabled="!friendInfo">添加</el-button>
+          <div v-if="addFriendFlag">
+            <el-button @click.prevent="noShowDialog">取消</el-button>
+            <el-button type="primary" @click.prevent="addFriend" :disabled="!friendInfo">添加</el-button>
+          </div>
         </template>
       </el-dialog>
     </div>
@@ -45,6 +50,9 @@
       // 使用解构来访问 props
       const { userId } = toRefs(props);
       const showDialog = ref(false);
+      const addFriendFlag = computed(() => {
+        return friendInfo.value != null;
+      });;
       const form = ref({
         userToId: '',
         userFromId: userId.value
@@ -57,33 +65,32 @@
         friendInfo.value = null;
       };
   
-      const searchFriend = (event) => {
+      const searchFriend = () => {
         // 假设搜索好友的接口为 /user/searchFriend
-        event.preventDefault(); // 防止默认行为，例如表单提交
         request.post({url: 'api/user/search/relationship', params: {userId: form.value.userToId}})
           .then(res => {
             friendInfo.value = res;
+            // console.log('搜索结果', res);
           })
           .catch(err => {
             console.error('搜索失败', err);
           });
       };
   
-      const addFriend = () => {
+      const addFriend = (event) => {
         console.log('添加好友:', form.value);
+        event.stopPropagation();
         // 提交表单，进行添加好友
         request.post({url: 'api/user/add', params:{userToId: form.value.userToId, userFromId: form.value.userFromId}}).then(res => {
           console.log(res);
         })
         showDialog.value = false;
-        nextTick(() => {
-          // 重置表单
-          resetForm();
-        });
       };
 
       const showDialogFun = () => {
         showDialog.value = true;
+        console.log('点击添加好友');
+        
       };
 
       const noShowDialog = (event) => {
@@ -92,6 +99,7 @@
       };
   
       return {
+        addFriendFlag,
         showDialog,
         form,
         friendInfo,
@@ -122,24 +130,36 @@
   }
 
   .friend-info {
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  .friend-nickname {
-    font-weight: bold;
-    font-size: 1.1em;
-    margin-bottom: 5px;
-    color: #333;
-   }
+    display: flex;
+    flex-direction: row; 
+    align-items: center; 
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-   .friend-id {
-    font-size: 0.9em;
-    color: #777;
+    > *:not(:last-child) {
+      margin-right: 10px;
+    }
+
+    .friend-details {
+      display: flex;
+      flex-direction: column; 
+    }
+
+    .friend-nickname {
+      margin-bottom: 5px;
+      font-size: 0.9em;
+      color: #777;
+    }
+
+    .friend-id {
+      font-size: 0.9em;
+      color: #777;
+    }
   }
-}
+
+
 
 
   </style>

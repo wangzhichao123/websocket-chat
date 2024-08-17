@@ -66,4 +66,9 @@ module.exports = defineConfig({
     },
     entry: './src/main.ts',   // 指定入口文件
   },
+  devServer: {
+    client: {
+        overlay: false,
+    },
+  },
 });

@@ -6,7 +6,8 @@
       <el-aside class="left-list mr-1">
           <el-container class="list-header">
             <OnlineStatus :isOnline="Msg === '在线中'" :onlineStatus="Msg">
-              <el-avatar class="avatar" size="default" fit="cover" :src="userAvatar"> {{username}} </el-avatar>
+              <el-avatar class="avatar" size="default" fit="cover" :src="userAvatar"></el-avatar>
+              <span class="username">{{username}}</span>
             </OnlineStatus>
             <el-button class="circle-button" type="primary" circle @click="showAddFriendDialog">
               <AddFriendDialog :userId="currUserUid" ref="addFriendDialog"/>
@@ -38,7 +39,7 @@
                   </template>
                   <el-menu-item-group v-for="filteredItem in filteredUserList" :key="filteredItem.userId">
                       <el-menu-item :index="String(filteredItem.userId)" @click="handleSelectUser(filteredItem)" style="height: 40px;">
-                          {{ filteredItem.nickname }}
+                         <el-avatar :src="filteredItem.userAvatar"></el-avatar> {{ filteredItem.nickname }}
                       </el-menu-item>
                   </el-menu-item-group>
                 </el-sub-menu>
@@ -376,7 +377,7 @@ const handlewsMessage = (e) => {
         url: `/api/user/relationship?userId=${currUserUid.value}`,
       }).then((res) => {
         console.log("获取用户列表", res);
-        userList.value = res;
+        userList.value = res.records;
       }).catch((err) => {
         console.log("获取用户列表失败", err);
       });
@@ -540,6 +541,11 @@ html, body {
             height: 40px;
             border-radius: 50%;
         }
+    }
+
+    .username{
+      font-size: 1.1rem;
+      translate: 0 -10px 0;
     }
 
     .circle-button {
