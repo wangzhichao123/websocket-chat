@@ -28,7 +28,7 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    transform: translateY(16px); /* 向下移动 */
+    transform: translateY(16px) translateX(-32px); /* 向下移动 */
     background-color: #ee1111;
   }
   
@@ -39,6 +39,6 @@
   .status-text {
     font-size: 14px;
     color: white;
-    transform: translateY(16px); /* 向下移动 */
+    transform: translateY(16px) translateX(-32px); /* 向下移动 */
   }
 </style>

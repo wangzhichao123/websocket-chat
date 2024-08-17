@@ -544,7 +544,7 @@ html, body {
     }
 
     .username{
-      font-size: 1.1rem;
+      font-size: 7/8rem;
       translate: 0 -10px 0;
     }
 
