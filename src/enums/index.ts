@@ -14,10 +14,10 @@ export enum CommandTypeEnum {
   LOGIN = 1,
   /** 2.发送消息 */
   SEND_MESSAGE,
-  /** 3.心跳 */
-  HEARTBEAT,
-  /** 4.确认消息 */
+  /** 3.确认消息 */
   CONFIRM_MESSAGE,
+  /** 4.心跳 */
+  HEARTBEAT,
 }
 
 /** 登录类型 1.邮箱登录 2.账号登录 3.手机登录 */
@@ -36,20 +36,24 @@ export enum StatusCodeEnum {
   LOGIN_SUCCESS = 10001,
   /** 登录出错 */
   LOGIN_ERROR = 10002,
-  /** 收到私聊消息 */
-  RECEIVE_PRIVATE_MESSAGE = 10003,
-  /** 收到群聊消息 */
-  RECEIVE_GROUP_MESSAGE = 10004,
+  /** 私聊/群组消息发送成功 */
+  SEND_MESSAGE_SUCCESS = 10003,
+  /** 私聊/群组消息发送失败 */
+  SEND_MESSAGE_ERROR = 10004,
   /** 收到好友列表 */
   RECEIVE_FRIEND_LIST = 10005,
   /** 收到群列表 */
   RECEIVE_GROUP_LIST = 10006,
-  /** 收到好友申请 */
-  RECEIVE_FRIEND_APPLY = 10012,
   /** 收到群申请 */
   RECEIVE_GROUP_APPLY = 10008,
   /** 收到好友申请回复 */
   RECEIVE_FRIEND_APPLY_REPLY = 10009,
+  /** 收到好友申请 */
+  RECEIVE_FRIEND_APPLY = 10012,
+  /** 发送待确认ACK */
+  MESSAGE_SEND_ACK = 10013,
+  /** 接收待确认ACK */
+  MESSAGE_RECEIVE_ACK = 10014,
 
 }
 

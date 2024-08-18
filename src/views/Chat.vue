@@ -296,11 +296,11 @@ const sendMessage = () => {
   const maxChars: number = 4000;
   const sendMsg = inputValue.value.substring(0, maxChars); // 最多发送4000字
   inputValue.value = '';
-  const msgId_uuid = generateUUID();
+  const msgId_uuid = generateUUID().replace(/-/g, '');
   if (messageType.value === GroupTypeEnum.PRIVATE){
     // 发送消息
     socketManager.sendMsg(sendMsg, currUserUid.value, selectContactId.value, msgId_uuid);
-    let obj: MessageVO = {
+    const obj: MessageVO = {
       messageId: msgId_uuid,
       userFromId: currUserUid.value,
       username: username.value,
@@ -388,28 +388,44 @@ const handlewsMessage = (e) => {
       console.log("好友申请");
       console.log(data);
     }
-    else  {
+    else if (data.code === StatusCodeEnum.MESSAGE_SEND_ACK) {
+      console.log("MESSAGE_SEND_ACK");
+      console.log(data);
+      const send_ack = data.data.sendMessageAck + 1;
+      if (data.data.userFromId === currUserUid.value) {
+        // 发送 ack 确认
+        const ack: MessageVO = {
+          messageId: data.data.messageId,
+        };
+        socketManager.getSocket().send(JSON.stringify({ cmd: String(CommandTypeEnum.CONFIRM_MESSAGE), data: ack, token: token }))
+      }
+    }
+    else if (data.code === StatusCodeEnum.MESSAGE_RECEIVE_ACK) {
+      console.log("MESSAGE_RECEIVE_ACK");
+      console.log(data);
+      if (data.data.userToId === currUserUid.value) {
+        // 发送 ack 确认
+        const ack: MessageVO = {
+          messageId: data.data.messageId,
+        };
+        socketManager.getSocket().send(JSON.stringify({ cmd: String(CommandTypeEnum.CONFIRM_MESSAGE), data: ack, token: token }))
+      }
+    }
+    else if (data.code === StatusCodeEnum.SEND_MESSAGE_SUCCESS) {
       console.log("接收到私聊消息");
       console.log(data);
-      // 添加到消息列表
-      const newMessages: MessageVO = {
-        messageId: data.data.messageId,
-        userFromId: data.data.userFromId,
-        username: data.data.username,
-        sendTime: data.data.sendTime,
-        messageContent: data.data.sendMessageContent,
-        status: "success"
-      };
-      MsgList.value = [...MsgList.value, newMessages];
-      // 消息确认
-      const confirm: MsgConfirmDTO = { 
-        messageId: data.data.messageId,
-        userToId: data.data.userToId,
-        userFromId: data.data.userFromId,
-        sendTime: data.data.sendTime,
-        
+      if (data.data.userFromId === currUserUid.value || data.data.userToId === currUserUid.value) {
+        // 添加到消息列表
+        const newMessages: MessageVO = {
+          messageId: data.data.messageId,
+          userFromId: data.data.userFromId,
+          username: data.data.username,
+          sendTime: data.data.sendTime,
+          messageContent: data.data.sendMessageContent,
+          status: "success"
+        };
+        MsgList.value = [...MsgList.value, newMessages];
       }
-      socketManager.getSocket().send(JSON.stringify({ cmd: String(CommandTypeEnum.CONFIRM_MESSAGE), data: confirm, token: token }))
     }
     
     return;
