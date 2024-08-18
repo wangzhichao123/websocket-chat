@@ -299,12 +299,13 @@ const sendMessage = () => {
   const msgId_uuid = generateUUID().replace(/-/g, '');
   if (messageType.value === GroupTypeEnum.PRIVATE){
     // 发送消息
-    socketManager.sendMsg(sendMsg, currUserUid.value, selectContactId.value, msgId_uuid);
+    const sendTime = new Date().toLocaleString();
+    socketManager.sendMsg(sendMsg, currUserUid.value, selectContactId.value, msgId_uuid, sendTime);
     const obj: MessageVO = {
       messageId: msgId_uuid,
       userFromId: currUserUid.value,
       username: username.value,
-      sendTime: new Date().toLocaleString(),
+      sendTime: sendTime,
       messageContent: sendMsg,
       status: "loading"
     }
@@ -414,7 +415,7 @@ const handlewsMessage = (e) => {
     else if (data.code === StatusCodeEnum.SEND_MESSAGE_SUCCESS) {
       console.log("接收到私聊消息");
       console.log(data);
-      if (data.data.userFromId === currUserUid.value || data.data.userToId === currUserUid.value) {
+      if (data.data.userToId === currUserUid.value) {
         // 添加到消息列表
         const newMessages: MessageVO = {
           messageId: data.data.messageId,
@@ -425,6 +426,14 @@ const handlewsMessage = (e) => {
           status: "success"
         };
         MsgList.value = [...MsgList.value, newMessages];
+      }
+      else if (data.data.userFromId === currUserUid.value){
+        const list = MsgList.value;
+        list.forEach((item) => {
+          if (item.messageId === data.data.messageId) {
+            item.status = "success";
+          }
+        });
       }
     }
     

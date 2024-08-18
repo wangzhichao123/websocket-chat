@@ -42,7 +42,7 @@ class SocketManager {
       this.getSocket().close();
   }
 
-  sendMsg(msgContent: string, userFromId: string, userToId: string, messageId: string, sendMessageType: string = String(GroupTypeEnum.PRIVATE),
+  sendMsg(msgContent: string, userFromId: string, userToId: string, messageId: string, sendTime: string, sendMessageType: string = String(GroupTypeEnum.PRIVATE),
           messageType: string = String(MessageTypeEnum.TEXT), groupId: string = '') {
     const { wsCache } = useCache();
     const AccessTokenKey = 'ACCESS_TOKEN';
