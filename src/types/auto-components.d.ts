@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AddFriendDialog: typeof import('./../components/user/AddFriendDialog.vue')['default']
+    ChatMessageDisplay: typeof import('./../components/message/ChatMessageDisplay.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElButton: typeof import('element-plus/es')['ElButton']

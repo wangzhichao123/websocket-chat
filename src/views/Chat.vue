@@ -13,19 +13,19 @@
               <AddFriendDialog :userId="currUserUid" ref="addFriendDialog"/>
             </el-button>
           </el-container>
-          <el-container>
-            <el-row class="w-12 p-4 py-1 bg-sky-400 content-start">
+          <el-container class="icon-list">
+            <el-row class="w-14 p-5 py-1 bg-sky-400 content-start">
               <el-col class="my-3">
-                <el-icon><Icon class="cursor-pointer" icon="websymbol:chat" /></el-icon>
+                <el-icon><Icon class="cursor-pointer" icon="websymbol:chat" :size=20 /></el-icon>
               </el-col>
               <el-col class="my-3">
-                <el-icon><Icon class="cursor-pointer" icon="weui:contacts-filled" /></el-icon>
+                <el-icon><Icon class="cursor-pointer" icon="weui:contacts-filled" :size=20 /></el-icon>
               </el-col>
               <el-col class="my-3">
-                <el-icon><Icon class="cursor-pointer" icon="material-symbols:group-work" /></el-icon>
+                <el-icon><Icon class="cursor-pointer" icon="material-symbols:group-work" :size=20 /></el-icon>
               </el-col>
               <el-col class="my-3">
-                <el-icon><Icon class="cursor-pointer" icon="whh:addfriend" /></el-icon>
+                <el-icon><Icon class="cursor-pointer" icon="whh:addfriend" :size=20 /></el-icon>
               </el-col>
               <!-- 更多 el-col -->
             </el-row>
@@ -39,11 +39,13 @@
                   </template>
                   <el-menu-item-group v-for="filteredItem in filteredUserList" :key="filteredItem.userId">
                       <el-menu-item :index="String(filteredItem.userId)" @click="handleSelectUser(filteredItem)" style="height: 40px;">
-                         <el-avatar :src="filteredItem.userAvatar"></el-avatar> {{ filteredItem.nickname }}
+                         <el-avatar :src="filteredItem.userAvatar"></el-avatar> 
+                         <span class="connect-person-name"> {{ filteredItem.nickname }}</span>
                       </el-menu-item>
                   </el-menu-item-group>
                 </el-sub-menu>
               </el-menu>
+              <ChatMessageDisplay :avatarUrl="userAvatar" :nickname="username"/>
             </el-scrollbar>
           </el-container>
       </el-aside>
@@ -486,6 +488,10 @@ html, body {
         background-color: aqua;
     }
 
+    .connect-person-name{
+      margin-left: 10px;
+    }
+
     .content {
         flex: 3;
         height: 100%;
@@ -526,6 +532,11 @@ html, body {
           }
         }
     }
+}
+
+
+.icon-list {
+
 }
 
 
