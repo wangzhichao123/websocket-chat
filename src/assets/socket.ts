@@ -59,7 +59,7 @@ class SocketManager {
         // cmd: String(CommandTypeEnum.SEND_MESSAGE),
         MessageType: messageType,
         sendMessageType: sendMessageType,
-        sendTime: new Date().toLocaleDateString(),
+        sendTime: sendTime,
         sendMessageContent: msgContent,
         receiveTime: '',
       },

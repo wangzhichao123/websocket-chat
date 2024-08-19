@@ -297,9 +297,9 @@ const sendMessage = () => {
   const sendMsg = inputValue.value.substring(0, maxChars); // 最多发送4000字
   inputValue.value = '';
   const msgId_uuid = generateUUID().replace(/-/g, '');
+  const sendTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
   if (messageType.value === GroupTypeEnum.PRIVATE){
-    // 发送消息
-    const sendTime = new Date().toLocaleString();
+    // 发送消息  
     socketManager.sendMsg(sendMsg, currUserUid.value, selectContactId.value, msgId_uuid, sendTime);
     const obj: MessageVO = {
       messageId: msgId_uuid,
@@ -312,7 +312,7 @@ const sendMessage = () => {
     MsgList.value.push(obj);
   }
   else if (messageType.value === GroupTypeEnum.GROUP){
-    socketManager.sendMsg(sendMsg, currUserUid.value, selectContactId.value, msgId_uuid, String(GroupTypeEnum.GROUP), String(MessageTypeEnum.TEXT), "111");
+    socketManager.sendMsg(sendMsg, currUserUid.value, selectContactId.value, msgId_uuid, sendTime, String(GroupTypeEnum.GROUP), String(MessageTypeEnum.TEXT), "111");
   }
 };
 
@@ -413,7 +413,7 @@ const handlewsMessage = (e) => {
       }
     }
     else if (data.code === StatusCodeEnum.SEND_MESSAGE_SUCCESS) {
-      console.log("接收到私聊消息");
+      console.log("SEND_MESSAGE_SUCCESS");
       console.log(data);
       if (data.data.userToId === currUserUid.value) {
         // 添加到消息列表
