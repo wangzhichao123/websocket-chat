@@ -53,7 +53,7 @@
   <style scoped lang="scss">
   .chat-container {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -63,11 +63,13 @@
     .avatar {
       width: 40px;
       height: 40px;
+      flex-shrink: 0; /* 防止在 flex 布局中缩小 */
       margin-right: 10px;
     }
   
     .chat-info {
       display: flex;
+      width: calc(100% - 40px);
       flex-direction: column;
     }
   
