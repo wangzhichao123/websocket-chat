@@ -54,7 +54,7 @@ class SocketManager {
       data: {
         messageId: messageId,
         userFromId: userFromId,
-        userToId: "222", // userToId
+        userToId: userToId,
         groupId: groupId,
         // cmd: String(CommandTypeEnum.SEND_MESSAGE),
         MessageType: messageType,

@@ -15,22 +15,12 @@
           </el-container>
           <el-container class="icon-list">
             <el-row class="w-14 p-5 py-1 bg-sky-400 content-start">
-              <el-col class="my-3">
-                <el-icon><Icon class="cursor-pointer" icon="websymbol:chat" :size=20 /></el-icon>
+              <el-col class="my-3" v-for="item in iconsList" :key="item.icon">
+                <el-icon><Icon class="cursor-pointer" :color="item.color" :icon="item.icon" :size=20 @click="handleSelectIcon(item)"/></el-icon>
               </el-col>
-              <el-col class="my-3">
-                <el-icon><Icon class="cursor-pointer" icon="weui:contacts-filled" :size=20 /></el-icon>
-              </el-col>
-              <el-col class="my-3">
-                <el-icon><Icon class="cursor-pointer" icon="material-symbols:group-work" :size=20 /></el-icon>
-              </el-col>
-              <el-col class="my-3">
-                <el-icon><Icon class="cursor-pointer" icon="whh:addfriend" :size=20 /></el-icon>
-              </el-col>
-              <!-- 更多 el-col -->
             </el-row>
             <el-scrollbar style="height: 696px;" class="flex-1 bg-yellow-100">
-              <el-menu :default-openeds="['1', '3']">
+              <el-menu :default-openeds="['1', '3']" v-if="currSelectIcon.name === 'contacts'">
                 <el-sub-menu index="1">
                   <template #title>
                       <el-icon>
@@ -45,7 +35,7 @@
                   </el-menu-item-group>
                 </el-sub-menu>
               </el-menu>
-              <ChatMessageDisplay :avatarUrl="userAvatar" :nickname="username"/>
+              <ChatMessageDisplay :avatarUrl="userAvatar" :nickname="username" v-if="currSelectIcon.name === 'chat'"/>
             </el-scrollbar>
           </el-container>
       </el-aside>
@@ -67,7 +57,7 @@
                     <!-- 左边 -->
                     <div v-if="currUserUid !== item.userFromId" style="margin-left: 10px;margin-bottom: 8px;">
                         <el-row class="row-bg" type="flex" align="middle">
-                            <el-avatar size="default" fit="fit">{{ item.userFromId }}</el-avatar>
+                            <el-avatar size="default" fit="cover" :src="headerAvatar">{{ item.userFromId }}</el-avatar>
                             <span style="margin-left: 10px">{{ dayjs(item.sendTime).format("YYYY-MM-DD HH:mm") }}</span>
                         </el-row>
 
@@ -83,7 +73,7 @@
                             <span style="margin-right: 10px">{{ dayjs(item.sendTime).format("YYYY-MM-DD HH:mm")
                             }}</span>
 
-                            <el-avatar size="default" fit="fit"> {{ item.userFromId }} </el-avatar>
+                            <el-avatar size="default" fit="cover" :src="userAvatar">{{ item.userToId }}</el-avatar>
                         </el-row>
 
                         <el-row justify="end">
@@ -178,6 +168,23 @@ const filteredUserList = computed({
   }
 });
 
+const iconsList = ref([
+  { icon: 'websymbol:chat', name: 'chat', color: 'white' },
+  { icon: 'weui:contacts-filled', name: 'contacts', color: 'black' },
+  { icon: 'material-symbols:group-work', name: 'group', color: 'black' },
+  { icon: 'whh:addfriend', name: 'addfriend', color: 'black' },
+]);
+
+const currSelectIcon = ref(iconsList.value[0]);
+
+const handleSelectIcon = (icon) => {
+  iconsList.value.forEach((item) => {
+    item.color = 'black';
+  });
+  icon.color = 'white';
+  currSelectIcon.value = icon;
+};
+
 // 添加好友
 const addFriendDialog = ref<InstanceType<typeof AddFriendDialog> | null>(null);
 
@@ -215,6 +222,7 @@ const inputValue = ref('');
 const Msg = ref("不在线");
 
 const MsgList = ref<MessageVO[]>([]);
+const MsgMap = new Map<string, MessageVO[]>(); // 存储每个联系人的消息记录
 
 // 滚动容器
 const chatRoom = ref<InstanceType<typeof ElScrollbar> | null>(null); // 定义chatRoom为ElScrollbar实例或null
@@ -285,6 +293,15 @@ const handleSelectUser = (item) => {
   headerTitle.value = item.nickname;
   headerAvatar.value = item.userAvatar;
   messageType.value = GroupTypeEnum.PRIVATE;
+  MsgMap.set(selectContactId, MsgList.value);
+  MsgList.value = MsgMap.get(item.userId) || [];
+  // chatRoom 滚动到底部
+  nextTick(() => {
+    if (chatRoom.value?.wrapRef) {
+      chatRoom.value.wrapRef.scrollTop = chatRoom.value.wrapRef.scrollHeight;
+    }
+    // console.log(chatRoom.value?.wrapRef.scrollHeight, 'chatRoom.value?.wrapRef.scrollHeight', chatRoom.value?.wrapRef.scrollTop, 'chatRoom.value?.wrapRef.scrollTop');
+  });
 }
 
 const sendMessage = () => {
@@ -381,9 +398,15 @@ const handlewsMessage = (e) => {
       }).then((res) => {
         console.log("获取用户列表", res);
         userList.value = res.records;
+        nextTick(() => {
+          // 获取好友消息
+          getUserFriendMessage();
+          console.log('MsgMap', MsgMap);
+        });
       }).catch((err) => {
         console.log("获取用户列表失败", err);
       });
+      // 待修改
     }
     else if (data.code === StatusCodeEnum.RECEIVE_FRIEND_APPLY) {
       console.log("好友申请");
@@ -396,7 +419,7 @@ const handlewsMessage = (e) => {
       if (data.data.userFromId === currUserUid.value) {
         // 发送 ack 确认
         const ack: MessageVO = {
-          messageId: data.data.messageId,
+          messageId: [data.data.messageId],
         };
         socketManager.getSocket().send(JSON.stringify({ cmd: String(CommandTypeEnum.CONFIRM_MESSAGE), data: ack, token: token }))
       }
@@ -407,7 +430,7 @@ const handlewsMessage = (e) => {
       if (data.data.userToId === currUserUid.value) {
         // 发送 ack 确认
         const ack: MessageVO = {
-          messageId: data.data.messageId,
+          messageId: [data.data.messageId],
         };
         socketManager.getSocket().send(JSON.stringify({ cmd: String(CommandTypeEnum.CONFIRM_MESSAGE), data: ack, token: token }))
       }
@@ -471,6 +494,41 @@ const generateUUID = () =>  {
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
+}
+
+const getUserFriendMessage = () => {
+  // 遍历 filteredUserList.value 数组
+  filteredUserList.value.forEach((item) => {
+    request.post<any>({
+      url: `/api/msg/friend?userFromId=${currUserUid.value}&userToId=${item.userId}`,
+    }).then((res) => {
+      // console.log("获取好友消息", res);
+      // 将 res.records 变成 MessageVO[]
+      res.records = res.records.map((item) => {
+        const obj: MessageVO = {
+          messageId: item.messageId,
+          userFromId: item.userFromId,
+          username: item.username,
+          sendTime: convertToDayjs(item.sendTime),
+          messageContent: item.sendMessageContent,
+          status: "success"
+        }
+        return obj;
+      });
+      // console.log('res.records', res.records, item.userId);
+      MsgMap.set(item.userId, res.records.reverse());
+    }).catch((err) => {
+      // console.log("获取好友消息失败", err);
+    });
+  });
+}
+
+const convertToDayjs = (dateArray: number[]) => {
+    if (dateArray.length < 3) {
+        throw new Error("Invalid dateArray. It should contain at least [year, month, day].");
+    }
+    const [year, month, day, hours = 0, minutes = 0] = dateArray;
+    return dayjs(new Date(year, month - 1, day, hours, minutes));
 }
 
 </script>
